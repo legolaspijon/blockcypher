@@ -1,0 +1,12 @@
+{
+    "name": "vendor/blockcypher",
+    "authors": [
+        {
+            "name": "fomichev",
+            "email": "w.dmitrij.fomichev@gmail.com"
+        }
+    ],
+    "require": {
+        "blockcypher/php-client": "^1.5"
+    }
+}
