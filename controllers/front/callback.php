@@ -10,8 +10,16 @@ class BlockCypherCallbackModuleFrontController extends ModuleFrontController
 
     protected function _webhook()
     {
-        $raw_body = file_get_contents('php://input');
+//        $data = $this->_getRawData();
+        $data = [
 
+        ];
+    }
+
+    private function _getRawData()
+    {
+        $raw_data = file_get_contents('php://input');
+        return json_encode($raw_data);
     }
 
 }

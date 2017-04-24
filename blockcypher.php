@@ -1,6 +1,8 @@
 <?php
 
-include dirname(__FILE__). '/vendor/autoload.php';
+include_once dirname(__FILE__). '/vendor/autoload.php';
+include_once 'classes/BlockcypherOrders.php';
+
 if (!defined('_PS_VERSION_'))
     exit;
 
@@ -8,6 +10,7 @@ use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use BlockCypher\Rest\ApiContext;
 use BlockCypher\Auth\SimpleTokenCredential;
 use \BlockCypher\Client\PaymentForwardClient;
+
 
 class BlockCypher extends PaymentModule
 {
@@ -352,7 +355,7 @@ class BlockCypher extends PaymentModule
 
     public function hookPaymentOptions($params)
     {
-        if (!$this->active) {
+        if (!$this->active || !$this->token || !$this->wallet_address) {
             return;
         }
 
@@ -396,10 +399,21 @@ class BlockCypher extends PaymentModule
             );
 
             $paymentForward = $paymentForwardClient->createForwardingAddress($this->wallet_address, $options);
-            $timestamp = time();
+            $blockcypherOrder = new BlockcypherOrders();
+            $blockcypherOrder->id_order = $this->currentOrder;
+            $blockcypherOrder->timestamp = time();
+            $blockcypherOrder->addr = $paymentForward->getInputAddress();
+            $blockcypherOrder->txid = '';
+            $blockcypherOrder->status = $id_order_state;
+            $blockcypherOrder->value = '';
+            $blockcypherOrder->coins = $amount_paid;
+            $blockcypherOrder->coins_payed = 0;
 
-            DB::getInstance()->execute("INSERT INTO `"._DB_PREFIX_."blockcypher_orders` (`id_order`, `timestamp`, `addr`, `txid`, `status`, `value`, `coins`, `coins_payed`) 
-                                        VALUES ({$this->currentOrder}, $timestamp, '{$paymentForward->getInputAddress()}', '', {$id_order_state}, '', {$amount_paid}, 0)");
+            if($blockcypherOrder->add()){
+                return $this->currentOrder;
+            }
         }
+
+        return false;
     }
 }
