@@ -29,6 +29,6 @@ class BlockcypherValidationModuleFrontController extends ModuleFrontController
         $module = $this->module;
         $module->createPayment($cart->id, Configuration::get('BLOCKCYPHER_PAYMENT_WAIT'), $total, $this->module->displayName, NULL, array(), (int)$currency->id, false, $customer->secure_key);
 
-        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
+        Tools::redirect($this->context->link->getModuleLink($module->name, 'payment'));
     }
 }

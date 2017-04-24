@@ -17,7 +17,16 @@ class BlockCypher extends PaymentModule
     protected $_html = '';
     protected $_postErrors = array();
 
+    /**
+     * Blockcypher API context
+     * @var ApiContext
+     */
     protected $apiContext;
+
+    /**
+     * Blockcypher account TOKEN
+     * @var  $token
+     */
     protected $token;
 
     protected $coin = 'bcy';
@@ -374,7 +383,6 @@ class BlockCypher extends PaymentModule
             case self::CHEIN_TYPE_MAIN:
                 $this->chain = 'main';
                 $this->coin = 'dash';
-
                 break;
         }
     }
@@ -392,7 +400,6 @@ class BlockCypher extends PaymentModule
 
             DB::getInstance()->execute("INSERT INTO `"._DB_PREFIX_."blockcypher_orders` (`id_order`, `timestamp`, `addr`, `txid`, `status`, `value`, `coins`, `coins_payed`) 
                                         VALUES ({$this->currentOrder}, $timestamp, '{$paymentForward->getInputAddress()}', '', {$id_order_state}, '', {$amount_paid}, 0)");
-            var_exit($paymentForward);
         }
     }
 }

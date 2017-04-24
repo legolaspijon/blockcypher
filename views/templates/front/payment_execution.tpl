@@ -1,1 +1,5 @@
-payment execution
+{extends file='page.tpl'}
+
+{block name='page_content'}
+    {* payment process*}
+{/block}

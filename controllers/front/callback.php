@@ -12,7 +12,6 @@ class BlockCypherCallbackModuleFrontController extends ModuleFrontController
     {
         $raw_body = file_get_contents('php://input');
 
-        //...
     }
 
 }
