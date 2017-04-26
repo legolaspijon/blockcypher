@@ -3,21 +3,13 @@
 class BlockcypherOrders extends ObjectModel
 {
     public $id;
-
     public $id_order;
-
     public $timestamp;
-
     public $addr;
-
     public $txid;
-
     public $status;
-
     public $value;
-
     public $coins;
-
     public $coins_payed;
 
     public static $definition = array(
@@ -35,6 +27,11 @@ class BlockcypherOrders extends ObjectModel
             'coins_payed' => array('type' => self::TYPE_FLOAT),
         )
     );
+
+    public function getPassedTime()
+    {
+        return time() - $this->timestamp;
+    }
 
     public function getRemainingPayment()
     {
@@ -58,6 +55,5 @@ class BlockcypherOrders extends ObjectModel
 
         return $orderObj;
     }
-
 
 }

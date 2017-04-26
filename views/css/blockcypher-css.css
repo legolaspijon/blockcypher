@@ -1,0 +1,17 @@
+.blocktext{
+    background: #ddd;
+    padding: 3px;
+    text-align: center;
+    display: inline-block;
+    border-radius: 6px;
+    width: 100%;
+}
+.top-space{
+    margin-top:15px;
+}
+.check-status{
+    margin-top: 15px;
+}
+.qrcode{
+    margin:0 auto;
+}

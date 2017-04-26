@@ -252,7 +252,7 @@ class BlockCypher extends PaymentModule
                         'label' => $this->trans('Chain', array(), 'Modules.WirePayment.Admin'),
                         'name' => 'BLOCKCYPHER_CHAIN_TYPE',
                         'required' => false,
-                        'desc' => 'Chose what kind of blockchain will be use. Test only for bitcoin currency',
+                        'desc' => 'Chose what kind of blockchain will be use. Test work only for bitcoin testnet',
                         'options' => array(
                             'query' => array(
                                 array(
