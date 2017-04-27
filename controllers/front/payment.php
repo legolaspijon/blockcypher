@@ -6,6 +6,7 @@ if (!defined('_PS_VERSION_')) {
 
 class BlockcypherPaymentModuleFrontController extends ModuleFrontController
 {
+
     public function initContent() {
         parent::initContent();
 
@@ -17,13 +18,11 @@ class BlockcypherPaymentModuleFrontController extends ModuleFrontController
         $blockcypherOrder = BlockcypherOrders::getBlockcypherOrderByOrderId($order_id);
 
         $this->context->smarty->assign([
-            'order_total' => $blockcypherOrder->coins,
-            'amount_receive' => $blockcypherOrder->coins_payed,
+            'order_total' => $blockcypherOrder->amount,
             'payment_address' => $blockcypherOrder->addr,
-            'amount_missing' => $blockcypherOrder->getRemainingPayment(),
-            'timer' => $blockcypherOrder->getPassedTime(),
-            'unconfirmed' => 0.00,
-            'confirmed' => 0.00,
+            'amount_receive' => $blockcypherOrder->receided_confirmed,
+            'amount_uncofirmed' => $blockcypherOrder->received_unconfirmed,
+            'timer' => 15,
         ]);
 
         $this->setTemplate('module:blockcypher/views/templates/front/payment_execution.tpl');

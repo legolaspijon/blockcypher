@@ -1,7 +1,9 @@
 <?php
 
 include_once dirname(__FILE__). '/vendor/autoload.php';
-include_once 'classes/BlockcypherOrders.php';
+include_once dirname(__FILE__). '/classes/BlockcypherOrders.php';
+include_once dirname(__FILE__). '/components/ExchangeCurrency.php';
+include_once dirname(__FILE__). '/components/BlockcypherAPIHelper.php';
 
 if (!defined('_PS_VERSION_'))
     exit;
@@ -9,7 +11,6 @@ if (!defined('_PS_VERSION_'))
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use BlockCypher\Rest\ApiContext;
 use BlockCypher\Auth\SimpleTokenCredential;
-use \BlockCypher\Client\PaymentForwardClient;
 
 
 class BlockCypher extends PaymentModule
@@ -32,12 +33,11 @@ class BlockCypher extends PaymentModule
      */
     protected $token;
 
-    protected $coin = 'bcy';
-    protected $chain = 'test';
+    public $coin = 'btc';
+    public $chain = 'test3';
 
     public $wallet_address;
     public $block_confirmations;
-
 
     public function __construct()
     {
@@ -109,17 +109,21 @@ class BlockCypher extends PaymentModule
     {
         return DB::getInstance()->execute("
             CREATE TABLE IF NOT EXISTS "._DB_PREFIX_."blockcypher_orders (
-                id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                id_order INT UNSIGNED NOT NULL,
-                timestamp INT(8) NOT NULL,
+                id INT(11) NOT NULL AUTO_INCREMENT,
+                id_order INT(11) NOT NULL,
+                currency_amount decimal(10, 2) NOT NULL,
+                amount decimal(10, 8) NOT NULL,
+                payment_currency varchar(20) NOT NULL,
+                created_at timestamp NOT NULL,
+                last_update timestamp NOT NULL,
                 addr varchar(100) NOT NULL,
-                txid varchar(100) NOT NULL,
+                txid varchar(100) NOT NULL DEFAULT '',
                 status TINYINT(1) NOT NULL,
-                value double(10,2) NOT NULL,
-                coins decimal(10,8) NOT NULL,
-                coins_payed decimal(10,8) NOT NULL,
+                receided_confirmed decimal(10,8) NOT NULL DEFAULT 00.0,
+                received_unconfirmed decimal(10,8) NOT NULL DEFAULT 00.0,
             PRIMARY KEY (id),
-            UNIQUE KEY order_table (addr))");
+            UNIQUE KEY order_table (addr))"
+        );
     }
 
     protected function createOrderStatuses()
@@ -185,7 +189,7 @@ class BlockCypher extends PaymentModule
 
     protected function uninstallDB()
     {
-        return DB::getInstance()->execute("DROP TABLE "._DB_PREFIX_."blokcypher_orders");
+        return DB::getInstance()->execute("DROP TABLE "._DB_PREFIX_."blockcypher_orders");
     }
 
     protected function deleteOrderStatuses()
@@ -363,6 +367,10 @@ class BlockCypher extends PaymentModule
             return;
         }
 
+        $currency = new Currency(($params['cart'])->id_currency);
+        if(!in_array($currency->iso_code, $this->getAllowedCurrencies()))
+            return false;
+
         $newOption = new PaymentOption();
         $newOption->setCallToActionText($this->trans('Pay by BlockCypher', array(), 'Modules.BlockCypher.Shop'))
             ->setLogo(_MODULE_DIR_ . 'blockcypher/views/img/dash.png')
@@ -392,22 +400,23 @@ class BlockCypher extends PaymentModule
 
     public function createPayment($id_cart, $id_order_state, $amount_paid, $payment_method, $message, $extra_vars, $currency_id, $dont_touch_amount, $secure_key)
     {
+        // Validate and create new Order
         if($this->validateOrder($id_cart, $id_order_state, $amount_paid, $payment_method, $message, $extra_vars, (int) $currency_id, $dont_touch_amount, $secure_key)){
-            $paymentForwardClient = new PaymentForwardClient($this->apiContext);
-            $options = array(
-                'callback_url' => "http://requestb.in/1o5pndd1?order_id={$this->currentOrder}&customer_secure_key={$secure_key}"
-            );
+            // Generate payment address
+            $paymentForward = BlockcypherAPIHelper::generateForwardingAddress($this->apiContext, $this->wallet_address);
 
-            $paymentForward = $paymentForwardClient->createForwardingAddress($this->wallet_address, $options);
+            // Exchange currency rate
+            $currency = new Currency($currency_id);
+            $amount = ExchangeCurrency::getExchangePrice($currency->iso_code, $this->coin);
+
+            // Push order data to Blockcypher Order table
             $blockcypherOrder = new BlockcypherOrders();
             $blockcypherOrder->id_order = $this->currentOrder;
-            $blockcypherOrder->timestamp = time();
             $blockcypherOrder->addr = $paymentForward->getInputAddress();
-            $blockcypherOrder->txid = '';
             $blockcypherOrder->status = $id_order_state;
-            $blockcypherOrder->value = '';
-            $blockcypherOrder->coins = $amount_paid;
-            $blockcypherOrder->coins_payed = 0;
+            $blockcypherOrder->amount = $amount;
+            $blockcypherOrder->payment_currency = $currency->iso_code;
+            $blockcypherOrder->currency_amount = $amount_paid;
 
             if($blockcypherOrder->add()){
                 return $this->currentOrder;
@@ -416,4 +425,10 @@ class BlockCypher extends PaymentModule
 
         return false;
     }
+
+    public function getAllowedCurrencies()
+    {
+        return ['USD', 'EUR']; // Currencies which adopted by this module
+    }
+
 }
