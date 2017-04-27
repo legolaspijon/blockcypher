@@ -4,13 +4,16 @@ class BlockcypherOrders extends ObjectModel
 {
     public $id;
     public $id_order;
-    public $timestamp;
+    public $amount;
+    public $currency_amount;
+    public $payment_currency;
     public $addr;
     public $txid;
     public $status;
-    public $value;
-    public $coins;
-    public $coins_payed;
+    public $receided_confirmed;
+    public $received_unconfirmed;
+    public $created_at;
+    public $last_update;
 
     public static $definition = array(
         'table' => 'blockcypher_orders',
@@ -18,26 +21,36 @@ class BlockcypherOrders extends ObjectModel
         'multilang' => false,
         'fields' => array(
             'id_order' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'timestamp' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
+            'currency_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
+            'payment_currency' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'addr' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'txid' => array('type' => self::TYPE_STRING),
             'status' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'value' => array('type' => self::TYPE_FLOAT),
-            'coins' => array('type' => self::TYPE_FLOAT),
-            'coins_payed' => array('type' => self::TYPE_FLOAT),
+            'receided_confirmed' => array('type' => self::TYPE_FLOAT),
+            'received_unconfirmed' => array('type' => self::TYPE_FLOAT),
+            'created_at' => array('type' => self::TYPE_DATE),
+            'last_update' => array('type' => self::TYPE_DATE),
         )
     );
 
-    public function getPassedTime()
-    {
-        return time() - $this->timestamp;
-    }
 
+    /**
+     * Get remaining sum
+     *
+     * @return integer
+     */
     public function getRemainingPayment()
     {
-        return $this->coins - $this->coins_payed;
+        return (int) ($this->amount - ($this->receided_confirmed + $this->received_unconfirmed));
     }
 
+    /**
+     * Get blockcypher order by order id
+     *
+     * @param integer $order_id
+     * @return self|false
+     */
     static public function getBlockcypherOrderByOrderId($order_id)
     {
         $order = Db::getInstance()->getRow("SELECT * FROM "._DB_PREFIX_."blockcypher_orders WHERE id_order=".$order_id);

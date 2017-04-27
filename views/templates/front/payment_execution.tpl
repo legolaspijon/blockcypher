@@ -16,11 +16,11 @@
                     <div class="col-md-5 col-xs-12">
                         <div class="row top-space">
                             <div class="col-md-6"><span class="od-title">Unconfirmed:</span></div>
-                            <div class="col-md-6"><span class="blocktext">{$unconfirmed}</span></div>
+                            <div class="col-md-6"><span class="blocktext">{$amount_unconfirmed}</span></div>
                         </div>
                         <div class="row top-space">
                             <div class="col-md-6"><span class="od-title">Confirmed:</span></div>
-                            <div class="col-md-6"><span class="blocktext">{$confirmed}</span></div>
+                            <div class="col-md-6"><span class="blocktext">{$amount_receive}</span></div>
                         </div>
                         <div class="row top-space">
                             <div class="col-md-6"><span class="od-title">Timer:</span></div>

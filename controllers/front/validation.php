@@ -5,6 +5,7 @@ class BlockcypherValidationModuleFrontController extends ModuleFrontController
     public function initContent()
     {
         $cart = $this->context->cart;
+
         if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active)
             Tools::redirect('index.php?controller=order&step=1');
 
@@ -27,8 +28,9 @@ class BlockcypherValidationModuleFrontController extends ModuleFrontController
 
         /** @var $module BlockCypher */
         $module = $this->module;
-        $id_order = $module->createPayment($cart->id, Configuration::get('BLOCKCYPHER_PAYMENT_WAIT'), $total, $this->module->displayName, NULL, array(), (int)$currency->id, false, $customer->secure_key);
 
-        Tools::redirect($this->context->link->getModuleLink($module->name, 'payment', array('order_id' => $id_order)));
+        $order_id = $module->createPayment($cart->id, Configuration::get('BLOCKCYPHER_PAYMENT_WAIT'), $total, $this->module->displayName, NULL, array(), (int)$currency->id, false, $customer->secure_key);
+
+        Tools::redirect($this->context->link->getModuleLink($module->name, 'payment', array('order_id' => $order_id)));
     }
 }
