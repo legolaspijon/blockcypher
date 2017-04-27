@@ -6,11 +6,11 @@
             <div class="col-md-6">
                 <div class="row top-space">
                     <div class="col-md-2 col-xs-12"><span class="od-title">Send:</span></div>
-                    <div class="col-md-7 col-xs-12"><span class="blocktext">{$order_total}BTC</div>
+                    <div class="col-md-7 col-xs-12"><span class="blocktext"><span id="amount_total" onclick="selectText('amount_total')">{$order_total}</span>BTC</span></div>
                 </div>
                 <div class="row top-space">
                     <div class="col-md-2 col-xs-12"><span class="od-title">To:</span></div>
-                    <div class="col-md-10 col-xs-12"><span class="blocktext" id="address">{$payment_address}</div>
+                    <div class="col-md-10 col-xs-12"><span class="blocktext" id="address" onclick="selectText('address')">{$payment_address}</div>
                 </div>
                 <div class="row top-space">
                     <div class="col-md-5 col-xs-12">

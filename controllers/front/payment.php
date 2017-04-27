@@ -22,8 +22,8 @@ class BlockcypherPaymentModuleFrontController extends ModuleFrontController
             'payment_address' => $blockcypherOrder->addr,
             'amount_missing' => $blockcypherOrder->getRemainingPayment(),
             'timer' => $blockcypherOrder->getPassedTime(),
-            'unconfirmed' => 0.00,
-            'confirmed' => 0.00,
+            'unconfirmed' => '0.00',
+            'confirmed' => '0.00',
         ]);
 
         $this->setTemplate('module:blockcypher/views/templates/front/payment_execution.tpl');

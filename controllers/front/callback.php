@@ -11,9 +11,9 @@ class BlockCypherCallbackModuleFrontController extends ModuleFrontController
     protected function _webhook()
     {
 //        $data = $this->_getRawData();
-        $data = [
-
-        ];
+//        $data = [
+//
+//        ];
     }
 
     private function _getRawData()
