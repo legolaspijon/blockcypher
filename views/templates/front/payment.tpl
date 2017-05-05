@@ -16,15 +16,15 @@
                     <div class="col-md-7 col-xs-12">
                         <div class="row top-space">
                             <div class="col-md-6"><span class="od-title">Unconfirmed:</span></div>
-                            <div class="col-md-6"><span class="blocktext">{$amount_unconfirmed}</span></div>
+                            <div class="col-md-6"><span class="blocktext unconfirmed">{$amount_unconfirmed}</span></div>
                         </div>
                         <div class="row top-space">
                             <div class="col-md-6"><span class="od-title">Confirmed:</span></div>
-                            <div class="col-md-6"><span class="blocktext">{$amount_receive}</span></div>
+                            <div class="col-md-6"><span class="blocktext received">{$amount_receive}</span></div>
                         </div>
                         <div class="row top-space">
                             <div class="col-md-6"><span class="od-title">Timer:</span></div>
-                            <div class="col-md-6"><span class="blocktext" id="timer">15 {l s='min' mod='blockcypher'}</span></div>
+                            <div class="col-md-6"><span class="blocktext countdown">{$timeLeft}</span></div>
                         </div>
                     </div>
                     <div class="col-md-5 col-xs-12">

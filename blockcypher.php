@@ -96,6 +96,7 @@ class BlockCypher extends PaymentModule
         if(!parent::install()
             || !$this->registerHook('paymentReturn')
             || !$this->registerHook('paymentOptions')
+            || !$this->registerHook('orderConfirmation')
             || !$this->createOrderStatuses()
             || !$this->installDB()
         ){
@@ -112,15 +113,16 @@ class BlockCypher extends PaymentModule
                 id INT(11) NOT NULL AUTO_INCREMENT,
                 id_order INT(11) NOT NULL,
                 currency_amount decimal(10, 2) NOT NULL,
-                amount decimal(10, 8) NOT NULL,
+                crypto_amount decimal(10, 8) NOT NULL,
                 payment_currency varchar(20) NOT NULL,
-                created_at timestamp NOT NULL,
-                last_update timestamp NOT NULL,
+                created_at timestamp NOT NULL default CURRENT_TIMESTAMP,
+                time_expired timestamp NOT NULL default CURRENT_TIMESTAMP,
+                last_update timestamp NOT NULL default CURRENT_TIMESTAMP,
                 addr varchar(100) NOT NULL,
                 txid varchar(100) NOT NULL DEFAULT '',
                 status TINYINT(1) NOT NULL,
-                receided_confirmed decimal(10,8) NOT NULL DEFAULT 00.0,
-                received_unconfirmed decimal(10,8) NOT NULL DEFAULT 00.0,
+                received_confirmed decimal(10,8) NOT NULL DEFAULT 0.00,
+                received_unconfirmed decimal(10,8) NOT NULL DEFAULT 0.00,
             PRIMARY KEY (id),
             UNIQUE KEY order_table (addr))"
         );
@@ -410,13 +412,16 @@ class BlockCypher extends PaymentModule
             $amount = ExchangeCurrency::getExchangePrice($currency->iso_code, $this->coin);
 
             // Push order data to Blockcypher Order table
+            $timeCreate = time();
             $blockcypherOrder = new BlockcypherOrders();
             $blockcypherOrder->id_order = $this->currentOrder;
             $blockcypherOrder->addr = $paymentForward->getInputAddress();
             $blockcypherOrder->status = $id_order_state;
-            $blockcypherOrder->amount = $amount;
+            $blockcypherOrder->crypto_amount = $amount;
             $blockcypherOrder->payment_currency = $currency->iso_code;
             $blockcypherOrder->currency_amount = $amount_paid;
+            $blockcypherOrder->created_at = date('Y-m-d H:i:s', $timeCreate);
+            $blockcypherOrder->time_expired = date('Y-m-d H:i:s', $timeCreate + 900);
 
             if($blockcypherOrder->add()){
                 return $this->currentOrder;
@@ -430,5 +435,11 @@ class BlockCypher extends PaymentModule
     {
         return ['USD', 'EUR']; // Currencies which adopted by this module
     }
+
+    public function hookOrderConfirmation($params)
+    {
+        return 'hook order confirmation';
+    }
+
 
 }

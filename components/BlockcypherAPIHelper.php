@@ -22,4 +22,19 @@ class BlockcypherAPIHelper
 
         return $paymentForwardClient->createForwardingAddress($wallet_address, $options);
     }
+
+
+    /**
+     * Get address info
+     * @param ApiContext $apiContext
+     * @param string $address
+     * @return \BlockCypher\Api\FullAddress
+     * */
+    static public function getFullAddress(ApiContext $apiContext, $address)
+    {
+        $addressClient = new \BlockCypher\Client\AddressClient($apiContext);
+        $fullAddress = $addressClient->getFullAddress($address);
+
+        return $fullAddress;
+    }
 }

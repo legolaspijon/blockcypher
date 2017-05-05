@@ -15,17 +15,22 @@ class BlockcypherPaymentModuleFrontController extends ModuleFrontController
             Tools::redirect('index.php');
         }
 
-        $blockcypherOrder = BlockcypherOrders::getBlockcypherOrderByOrderId($order_id);
+        $blockcypherOrder = BlockcypherOrders::getBlockcypherOrderByColumnName($order_id, 'id_order');
+        $timeLeft = (strtotime($blockcypherOrder->time_expired) - time());
+
+        if($timeLeft <= 0) {
+            exit('expired order');
+        }
 
         $this->context->smarty->assign([
-            'order_total' => $blockcypherOrder->amount,
+            'order_total' => $blockcypherOrder->crypto_amount,
             'payment_address' => $blockcypherOrder->addr,
-            'amount_receive' => $blockcypherOrder->receided_confirmed,
+            'amount_receive' => $blockcypherOrder->received_confirmed,
             'amount_unconfirmed' => $blockcypherOrder->received_unconfirmed,
-            'timer' => 15,
+            'timeLeft' => $timeLeft
         ]);
 
-        $this->setTemplate('module:blockcypher/views/templates/front/payment_execution.tpl');
+        $this->setTemplate('module:blockcypher/views/templates/front/payment.tpl');
     }
 
     public function setMedia()
@@ -35,6 +40,4 @@ class BlockcypherPaymentModuleFrontController extends ModuleFrontController
         $this->registerJavascript('blockcypher-js',"modules/".$this->module->name."/views/js/blockcypher-js.js", array('priority' => 110));
         $this->registerStylesheet('blockcypher-css',"modules/".$this->module->name."/views/css/blockcypher-css.css");
     }
-
-
 }
