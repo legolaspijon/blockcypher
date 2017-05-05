@@ -13,7 +13,7 @@
                     <div class="col-md-10 col-xs-12"><span class="blocktext" id="address" onclick="selectText('address')">{$payment_address}</div>
                 </div>
                 <div class="row top-space">
-                    <div class="col-md-5 col-xs-12">
+                    <div class="col-md-7 col-xs-12">
                         <div class="row top-space">
                             <div class="col-md-6"><span class="od-title">Unconfirmed:</span></div>
                             <div class="col-md-6"><span class="blocktext">{$amount_unconfirmed}</span></div>
@@ -27,7 +27,7 @@
                             <div class="col-md-6"><span class="blocktext" id="timer">15 {l s='min' mod='blockcypher'}</span></div>
                         </div>
                     </div>
-                    <div class="col-md-7 col-xs-12">
+                    <div class="col-md-5 col-xs-12">
                         <div class="check-status"><a href="#" id="check">Check status</a></div>
                     </div>
                 </div>
