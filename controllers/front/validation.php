@@ -16,6 +16,7 @@ class BlockcypherValidationModuleFrontController extends ModuleFrontController
                 $authorized = true;
                 break;
             }
+
         if (!$authorized)
             die($this->module->getTranslator()->trans('This payment method is not available.', array(), 'Modules.WirePayment.Shop'));
 
@@ -28,10 +29,9 @@ class BlockcypherValidationModuleFrontController extends ModuleFrontController
 
         /** @var $module BlockCypher */
         $module = $this->module;
+        $module->createPayment($cart->id, Configuration::get('BLOCKCYPHER_PAYMENT_WAIT'), $total, $this->module->displayName, NULL, array(), (int)$currency->id, false, $customer->secure_key);
 
-        $order_id = $module->createPayment($cart->id, Configuration::get('BLOCKCYPHER_PAYMENT_WAIT'), $total, $this->module->displayName, NULL, array(), (int)$currency->id, false, $customer->secure_key);
-//        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$module->id.'&id_order='.$module->currentOrder.'&key='.$customer->secure_key);
-
-        Tools::redirect($this->context->link->getModuleLink($module->name, 'payment', array('order_id' => $order_id)));
+        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$module->id.'&id_order='.$module->currentOrder.'&key='.$customer->secure_key);
+//        Tools::redirect($this->context->link->getModuleLink($module->name, 'payment', array('order_id' => $order_id)));
     }
 }

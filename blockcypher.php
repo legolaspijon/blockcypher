@@ -38,6 +38,7 @@ class BlockCypher extends PaymentModule
 
     public $wallet_address;
     public $block_confirmations;
+    public $expiration_time = 900;
 
     public function __construct()
     {
@@ -116,8 +117,8 @@ class BlockCypher extends PaymentModule
                 crypto_amount decimal(10, 8) NOT NULL,
                 payment_currency varchar(20) NOT NULL,
                 created_at timestamp NOT NULL default CURRENT_TIMESTAMP,
-                time_expired timestamp NOT NULL default CURRENT_TIMESTAMP,
-                last_update timestamp NOT NULL default CURRENT_TIMESTAMP,
+                time_expired timestamp NOT NULL,
+                last_update timestamp NOT NULL,
                 addr varchar(100) NOT NULL,
                 txid varchar(100) NOT NULL DEFAULT '',
                 status TINYINT(1) NOT NULL,
@@ -134,7 +135,7 @@ class BlockCypher extends PaymentModule
                 'color' => '#FF8C00',
                 'paid' => false,
             ))
-            && $this->createOrderStatus('PAYMENT_WAIT_CONFIRMATIONS', "Wait 2 Confirmations", array(
+            && $this->createOrderStatus('PAYMENT_EXPIRED', "Expired", array(
                 'color' => '#FF8C00',
                 'paid' => false,
             ))
@@ -197,8 +198,8 @@ class BlockCypher extends PaymentModule
     protected function deleteOrderStatuses()
     {
         $isOk = $this->deleteOrderStatus('PAYMENT_WAIT')
-            && $this->deleteOrderStatus('PAYMENT_WAIT_CONFIRMATIONS')
-            && $this->deleteOrderStatus('PAYMENT_RECEIVED');
+            && $this->deleteOrderStatus('PAYMENT_RECEIVED')
+            && $this->deleteOrderStatus('PAYMENT_EXPIRE');
 
         return $isOk;
     }
@@ -383,7 +384,29 @@ class BlockCypher extends PaymentModule
 
     public function hookPaymentReturn($params)
     {
-//        return $this->fetch('module:blockcypher/views/templates/hook/payment_return.tpl');
+        $blockcypherOrder = BlockcypherOrders::getBlockcypherOrderByColumnName($params['order']->id, 'id_order');
+
+        if(!$blockcypherOrder){
+            Tools::redirect('index.php');
+        }
+
+        $order_statuses = Configuration::getMultiple(['BLOCKCYPHER_PAYMENT_RECEIVED', 'BLOCKCYPHER_PAYMENT_EXPIRED', 'BLOCKCYPHER_PAYMENT_WAIT']);
+
+        $this->context->controller->addJS($this->_path . 'views/js/qrcode.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/blockcypher-js.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/blockcypher-css.css');
+
+        $this->context->smarty->assign([
+            'status' => $blockcypherOrder->status,
+            'statuses' => $order_statuses,
+            'order_total' => $blockcypherOrder->crypto_amount,
+            'payment_address' => $blockcypherOrder->addr,
+            'amount_receive' => $blockcypherOrder->received_confirmed,
+            'amount_unconfirmed' => $blockcypherOrder->received_unconfirmed,
+            'timeLeft' => $blockcypherOrder->timeLeft()
+        ]);
+
+        return $this->display(__FILE__, 'views/templates/hook/payment_return.tpl');
     }
 
     protected function _setChain($type)
@@ -421,7 +444,7 @@ class BlockCypher extends PaymentModule
             $blockcypherOrder->payment_currency = $currency->iso_code;
             $blockcypherOrder->currency_amount = $amount_paid;
             $blockcypherOrder->created_at = date('Y-m-d H:i:s', $timeCreate);
-            $blockcypherOrder->time_expired = date('Y-m-d H:i:s', $timeCreate + 900);
+            $blockcypherOrder->time_expired = date('Y-m-d H:i:s', $timeCreate + $this->expiration_time);
 
             if($blockcypherOrder->add()){
                 return $this->currentOrder;
@@ -440,6 +463,4 @@ class BlockCypher extends PaymentModule
     {
         return 'hook order confirmation';
     }
-
-
 }

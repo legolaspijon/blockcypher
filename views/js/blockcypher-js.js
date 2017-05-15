@@ -21,7 +21,7 @@ jQuery(document).ready(function(){
 
     $(document).on('click', '#check', null, function (e) {
         e.preventDefault();
-        checkAddressData('check', address);
+        checkAddressData('/module/blockcypher/check', address);
     });
 
     function checkAddressData(url, address)
@@ -32,14 +32,11 @@ jQuery(document).ready(function(){
             data: {address: address},
             dataType: 'json',
             success: function (response) {
-                alert('qwerty');
-                if (response.redirect) {
-                    // window.location.href = response.redirect;
+                if (response.reload) {
+                     window.location.reload();
                 }
-
                 $('.unconfirmed').html(response.unconfirmed);
                 $('.received').html(response.received);
-
             },
             error: function(data){
                 console.log(data);
@@ -49,7 +46,7 @@ jQuery(document).ready(function(){
     }
 
     setInterval(function(){
-        checkAddressData('check', address);}
+        checkAddressData('/module/blockcypher/check', address);}
         , 16500);
 
 });

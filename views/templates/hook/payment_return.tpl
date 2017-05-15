@@ -23,23 +23,58 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-{if $status == 'ok'}
-    <p>
-      {l s='Your order on %s is complete.' sprintf=[$shop_name] mod='ps_wirepayment'}<br/>
-      {l s='Please send us a bank wire with:' mod='ps_wirepayment'}
-    </p>
-    {include file='module:ps_wirepayment/views/templates/hook/_partials/payment_infos.tpl'}
+    <div class="container wrap">
+        <h1>Order details</h1>
+        <div class="row">
+            {if $status == $statuses['BLOCKCYPHER_PAYMENT_WAIT']}
+                <p>Please use this detail for paid this order</p>
+                <div class="col-md-6">
+                    <div class="row top-space">
+                        <div class="col-md-2 col-xs-12"><span class="od-title">Send:</span></div>
+                        <div class="col-md-7 col-xs-12"><span class="blocktext"><span id="amount_total" onclick="selectText('amount_total')">{$order_total}</span>BTC</span></div>
+                    </div>
+                    <div class="row top-space">
+                        <div class="col-md-2 col-xs-12"><span class="od-title">To:</span></div>
+                        <div class="col-md-10 col-xs-12"><span class="blocktext" id="address" onclick="selectText('address')">{$payment_address}</div>
+                    </div>
+                    <div class="row top-space">
+                        <div class="col-md-7 col-xs-12">
+                            <div class="row top-space">
+                                <div class="col-md-6"><span class="od-title">Unconfirmed:</span></div>
+                                <div class="col-md-6"><span class="blocktext unconfirmed">{$amount_unconfirmed}</span></div>
+                            </div>
+                            <div class="row top-space">
+                                <div class="col-md-6"><span class="od-title">Confirmed:</span></div>
+                                <div class="col-md-6"><span class="blocktext received">{$amount_receive}</span></div>
+                            </div>
+                            <div class="row top-space">
+                                <div class="col-md-6"><span class="od-title">Timer:</span></div>
+                                <div class="col-md-6"><span class="blocktext countdown">{$timeLeft}</span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-5 col-xs-12">
+                            <div class="check-status"><a href="#" id="check">Check status</a></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="qrcode"></div>
+                </div>
+            {elseif $status == Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED')}
+                <div class="col-md-12 alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    Payment expired
+                </div>
+                {include file='module:blockcypher/views/templates/hook/_partials/payment_info.tpl'}
+            {elseif $status == Configuration::get('BLOCKCYPHER_PAYMENT_RECEIVED')}
+                <div class="col-md-12 alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    Your payment has been received. Thank you for shopping with us.
+                </div>
+                {include file='module:blockcypher/views/templates/hook/_partials/payment_info.tpl'}
+            {/if}
+        </div>
+    </div>
 
-    <p>
-      {l s='Please specify your order reference %s in the bankwire description.' sprintf=[$reference] mod='ps_wirepayment'}<br/>
-      {l s='We\'ve also sent you this information by e-mail.' mod='ps_wirepayment'}
-    </p>
-    <strong>{l s='Your order will be sent as soon as we receive payment.' mod='ps_wirepayment'}</strong>
-    <p>
-      {l s='If you have questions, comments or concerns, please contact our [1]expert customer support team[/1].' mod='ps_wirepayment' sprintf=['[1]' => "<a href='{$contact_url}'>", '[/1]' => '</a>']}
-    </p>
-{else}
-    <p class="warning">
-      {l s='We noticed a problem with your order. If you think this is an error, feel free to contact our [1]expert customer support team[/1].' mod='ps_wirepayment' sprintf=['[1]' => "<a href='{$contact_url}'>", '[/1]' => '</a>']}
-    </p>
-{/if}
+
+

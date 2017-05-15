@@ -81,8 +81,8 @@ class BlockcypherOrders extends ObjectModel
         return $this->received_confirmed >= $this->crypto_amount;
     }
 
-    public function isExpired()
+    public function timeLeft()
     {
-        return strtotime($this->time_expired) < time();
+        return (strtotime($this->time_expired) - time());
     }
 }

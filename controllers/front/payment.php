@@ -11,23 +11,36 @@ class BlockcypherPaymentModuleFrontController extends ModuleFrontController
         parent::initContent();
 
         $order_id = (int) Tools::getValue('order_id');
-        if(!$order_id){
+        $blockcypherOrder = BlockcypherOrders::getBlockcypherOrderByColumnName($order_id, 'id_order');
+
+        if(!$blockcypherOrder){
             Tools::redirect('index.php');
         }
 
-        $blockcypherOrder = BlockcypherOrders::getBlockcypherOrderByColumnName($order_id, 'id_order');
-        $timeLeft = (strtotime($blockcypherOrder->time_expired) - time());
+        $order_statuses = Configuration::getMultiple(['BLOCKCYPHER_PAYMENT_RECEIVED', 'BLOCKCYPHER_PAYMENT_EXPIRED', 'BLOCKCYPHER_PAYMENT_WAIT']);
 
-        if($timeLeft <= 0) {
-            exit('expired order');
+        if($blockcypherOrder->status == $order_statuses['BLOCKCYPHER_PAYMENT_RECEIVED']){
+
+            $order = new Order($order_id);
+            $history = new OrderHistory();
+            $history->id_order = (int)$order->id;
+            $history->changeIdOrderState(Configuration::get('BLOCKCYPHER_PAYMENT_RECEIVED'), (int)($order->id));
+
+            $cart = $this->context->cart;
+            $customer = $this->context->customer;
+
+            Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
+            die();
         }
 
         $this->context->smarty->assign([
+            'status' => $blockcypherOrder->status,
+            'statuses' => $order_statuses,
             'order_total' => $blockcypherOrder->crypto_amount,
             'payment_address' => $blockcypherOrder->addr,
             'amount_receive' => $blockcypherOrder->received_confirmed,
             'amount_unconfirmed' => $blockcypherOrder->received_unconfirmed,
-            'timeLeft' => $timeLeft
+            'timeLeft' => $blockcypherOrder->timeLeft()
         ]);
 
         $this->setTemplate('module:blockcypher/views/templates/front/payment.tpl');
