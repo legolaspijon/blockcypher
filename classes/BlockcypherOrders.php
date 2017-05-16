@@ -65,6 +65,11 @@ class BlockcypherOrders extends ObjectModel
         return $order;
     }
 
+
+    /**
+     * @param array $data
+     * @return BlockcypherOrders
+     * */
     static protected function _initObj($data)
     {
         $order = new self();
@@ -77,12 +82,45 @@ class BlockcypherOrders extends ObjectModel
         return $order;
     }
 
-    public function isReceived(){
-        return $this->received_confirmed >= $this->crypto_amount;
+    /**
+     * @return array
+     * */
+    public function getTransactions()
+    {
+        return unserialize($this->txid);
+    }
+
+    /**
+     * @param string|array $transaction
+     * */
+    public function setTransactions($transaction)
+    {
+        $txs = $this->getTransactions();
+
+        if(is_array($transaction)){
+            $txs = array_merge($txs, $transaction);
+        } else {
+            array_push($txs, $transaction);
+        }
+
+        $this->txid = serialize($txs);
     }
 
     public function timeLeft()
     {
         return (strtotime($this->time_expired) - time());
+    }
+
+    public function isExpired()
+    {
+        return $this->timeLeft() <= 0;
+    }
+
+    /**
+     * @param
+     * */
+    public function plus($sum){
+        $sum = $sum / 1.0e8;
+        $this->received_confirmed = $this->received_confirmed + $sum;
     }
 }

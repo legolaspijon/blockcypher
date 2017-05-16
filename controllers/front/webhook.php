@@ -2,18 +2,43 @@
 
 class blockcypherWebhookModuleFrontController extends ModuleFrontController
 {
-    // UPDATE BLOCKCYPHER_ORDER_TABLE
     public function postProcess() {
         parent::postProcess();
+
         $data = file_get_contents(__DIR__ .'/data.json');
         $data = json_decode($data);
 
-        $order_id = 14;//$_REQUEST['order_id'];
-        $order = BlockcypherOrders::getBlockcypherOrderByColumnName($order_id, 'id_order');
+        $total_received = 0;
+        $address = '';
 
+        if(isset($data->address)) {
+            $total_received = $data->total_sent;
+            $address = $data->address;
+        } elseif(isset($data->input_address)) {
+            $address = $data->input_address;
+            $total_received = $data->value;
+        }
 
+        if(empty($address) || empty($total_received))
+            exit();
 
+        $order = BlockcypherOrders::getBlockcypherOrderByColumnName($address, 'addr');
+        $order->plus($total_received);
+        $order->last_update = time();
 
-exit();
+        if($order->received_confirmed == 0 && $order->isExpired()) {
+            $order->status = Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED');
+        } elseif ($order->received_confirmed >= $order->crypto_amount) {
+            $order->status = Configuration::get('BLOCKCYPHER_PAYMENT_RECEIVED');
+        }
+
+        $order->update();
+
+        if($order->status != Configuration::get('BLOCKCYPHER_PAYMENT_WAIT')){
+            $ps_order = new Order($order->id_order);
+            $ps_order->setCurrentState($order->status);
+        }
+
+        exit();
     }
 }

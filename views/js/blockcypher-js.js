@@ -45,9 +45,7 @@ jQuery(document).ready(function(){
         });
     }
 
-    setInterval(function(){
-        checkAddressData('/module/blockcypher/check', address);}
-        , 16500);
+    setInterval(function(){checkAddressData('/module/blockcypher/check', address);}, 16500);
 
 });
 
@@ -84,8 +82,8 @@ jQuery.fn.countdown = function (duration, message) {
                 // Wait 3 seconds to make sure the order has really timed out, then force processing of orders in database
                 jQuery.ajax({
                     type: 'POST',
-                    url: 'check',
-                    data: {},
+                    url: '/module/blockcypher/check',
+                    data: {address: $('#address').html()},
                     dataType: 'json',
                     success: function () {
                         window.location.href = CryptoWoo.redirect;

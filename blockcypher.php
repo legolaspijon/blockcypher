@@ -428,7 +428,10 @@ class BlockCypher extends PaymentModule
         // Validate and create new Order
         if($this->validateOrder($id_cart, $id_order_state, $amount_paid, $payment_method, $message, $extra_vars, (int) $currency_id, $dont_touch_amount, $secure_key)){
             // Generate payment address
-            $paymentForward = BlockcypherAPIHelper::generateForwardingAddress($this->apiContext, $this->wallet_address);
+            $paymentForward = BlockcypherAPIHelper::generateForwardingAddress($this->apiContext, $this->wallet_address, [
+                'callbackUrl' => 'http://requestb.in/yvgjnnyv',//_PS_BASE_URL_, // TODO CHANGE CALLBACK!!!
+                'data' => array()
+            ]);
 
             // Exchange currency rate
             $currency = new Currency($currency_id);
@@ -436,15 +439,15 @@ class BlockCypher extends PaymentModule
 
             // Push order data to Blockcypher Order table
             $timeCreate = time();
-            $blockcypherOrder = new BlockcypherOrders();
-            $blockcypherOrder->id_order = $this->currentOrder;
-            $blockcypherOrder->addr = $paymentForward->getInputAddress();
-            $blockcypherOrder->status = $id_order_state;
-            $blockcypherOrder->crypto_amount = $amount;
+            $blockcypherOrder                   = new BlockcypherOrders();
+            $blockcypherOrder->id_order         = $this->currentOrder;
+            $blockcypherOrder->addr             = $paymentForward->getInputAddress();
+            $blockcypherOrder->status           = $id_order_state;
+            $blockcypherOrder->crypto_amount    = $amount;
             $blockcypherOrder->payment_currency = $currency->iso_code;
-            $blockcypherOrder->currency_amount = $amount_paid;
-            $blockcypherOrder->created_at = date('Y-m-d H:i:s', $timeCreate);
-            $blockcypherOrder->time_expired = date('Y-m-d H:i:s', $timeCreate + $this->expiration_time);
+            $blockcypherOrder->currency_amount  = $amount_paid;
+            $blockcypherOrder->created_at       = date('Y-m-d H:i:s', $timeCreate);
+            $blockcypherOrder->time_expired     = date('Y-m-d H:i:s', $timeCreate + $this->expiration_time);
 
             if($blockcypherOrder->add()){
                 return $this->currentOrder;
@@ -452,6 +455,18 @@ class BlockCypher extends PaymentModule
         }
 
         return false;
+    }
+
+    public function updateTime($addr)
+    {
+        $order = BlockcypherOrders::getBlockcypherOrderByColumnName($addr, 'addr');
+        if($order->timeLeft() <= 0) {
+            // ps order
+            $ps_order = new Order($order->id);
+            var_dump(Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED'));
+            exit;
+            $ps_order->setCurrentState(Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED'));
+        }
     }
 
     public function getAllowedCurrencies()

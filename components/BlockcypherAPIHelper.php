@@ -10,14 +10,15 @@ class BlockcypherAPIHelper
      *
      * @param ApiContext $apiContext
      * @param string $wallet_address
-     * @param array $callbakParams
+     * @param array $params
      * @return BlockCypher\Api\PaymentForward
      */
-    static public function generateForwardingAddress(ApiContext $apiContext, $wallet_address, $callbakParams = array())
+    static public function generateForwardingAddress(ApiContext $apiContext, $wallet_address, $params = array())
     {
         $paymentForwardClient = new PaymentForwardClient($apiContext);
         $options = array(
-            'callback_url' => "http://my.address.com?" . http_build_query($callbakParams) // TODO set callback url
+            'callback_url' => $params['callbackUrl'] . '?' . http_build_query($params['data']),
+            'enable_confirmations' => true
         );
 
         return $paymentForwardClient->createForwardingAddress($wallet_address, $options);
