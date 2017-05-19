@@ -38,21 +38,11 @@ class BlockcypherOrders extends ObjectModel
 
 
     /**
-     * Get remaining sum
-     *
-     * @return integer
-     */
-    public function getRemainingPayment()
-    {
-        return (int) ($this->amount - ($this->received_confirmed + $this->received_unconfirmed));
-    }
-
-    /**
      * Get blockcypher order by column name
      *
      * @param mixed $column name
      * @param string $where value
-     * @return self|false
+     * @return BlockcypherOrders|false
      */
     static public function getBlockcypherOrderByColumnName($column, $where)
     {
@@ -111,16 +101,23 @@ class BlockcypherOrders extends ObjectModel
         return (strtotime($this->time_expired) - time());
     }
 
+    public function paidLeft()
+    {
+        return bcsub($this->crypto_amount, $this->received_confirmed, 8);
+    }
+
     public function isExpired()
     {
         return $this->timeLeft() <= 0;
     }
 
-    /**
-     * @param
-     * */
     public function plus($sum){
-        $sum = $sum / 1.0e8;
-        $this->received_confirmed = $this->received_confirmed + $sum;
+        echo (string)$sum; exit();
+        $this->received_confirmed = (float)$this->received_confirmed;
+
+        $this->received_confirmed = bcadd(0.00054000, $sum, 8);
+        echo $this->received_confirmed;
+        exit;
     }
+
 }

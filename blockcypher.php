@@ -403,7 +403,8 @@ class BlockCypher extends PaymentModule
             'payment_address' => $blockcypherOrder->addr,
             'amount_receive' => $blockcypherOrder->received_confirmed,
             'amount_unconfirmed' => $blockcypherOrder->received_unconfirmed,
-            'timeLeft' => $blockcypherOrder->timeLeft()
+            'timeLeft' => $blockcypherOrder->timeLeft(),
+            'paidLeft' => $blockcypherOrder->paidLeft()
         ]);
 
         return $this->display(__FILE__, 'views/templates/hook/payment_return.tpl');
@@ -457,16 +458,21 @@ class BlockCypher extends PaymentModule
         return false;
     }
 
-    public function updateTime($addr)
+    /**
+     * @param BlockcypherOrders $order
+     * @param int $order_status_id
+     */
+    public function updateStatus(BlockcypherOrders $order, $order_status_id)
     {
-        $order = BlockcypherOrders::getBlockcypherOrderByColumnName($addr, 'addr');
-        if($order->timeLeft() <= 0) {
-            // ps order
-            $ps_order = new Order($order->id);
-            var_dump(Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED'));
-            exit;
-            $ps_order->setCurrentState(Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED'));
-        }
+        $order->status = $order_status_id;
+        $order->update();
+
+        // ps order
+        $ps_order = new Order($order->id_order);
+        $ps_order->setCurrentState($order_status_id);
+        $history = new OrderHistory();
+        $history->id_order = (int)$ps_order->id;
+        $history->changeIdOrderState($order_status_id, (int)($ps_order->id));
     }
 
     public function getAllowedCurrencies()

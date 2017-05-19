@@ -26,7 +26,27 @@
     <div class="container wrap">
         <h1>Order details</h1>
         <div class="row">
-            {if $status == $statuses['BLOCKCYPHER_PAYMENT_WAIT']}
+            {if $status == $statuses['BLOCKCYPHER_PAYMENT_WAIT'] && $timeLeft <= 0}
+                <div class="col-md-12 alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    Time out please pay
+                </div>
+                {include file='module:blockcypher/views/templates/hook/_partials/payment_info.tpl'}
+                <br>
+                <div>Is not enough: {$paidLeft}</div>
+            {elseif $status == Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED')}
+                <div class="col-md-12 alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    Payment expired
+                </div>
+                {include file='module:blockcypher/views/templates/hook/_partials/payment_info.tpl'}
+            {elseif $status == Configuration::get('BLOCKCYPHER_PAYMENT_RECEIVED')}
+                <div class="col-md-12 alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    Your payment has been received. Thank you for shopping with us.
+                </div>
+                {include file='module:blockcypher/views/templates/hook/_partials/payment_info.tpl'}
+            {else}
                 <p>Please use this detail for paid this order</p>
                 <div class="col-md-6">
                     <div class="row top-space">
@@ -60,18 +80,6 @@
                 <div class="col-md-6">
                     <div id="qrcode"></div>
                 </div>
-            {elseif $status == Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED')}
-                <div class="col-md-12 alert alert-info">
-                    <button type="button" class="close" data-dismiss="alert">×</button>
-                    Payment expired
-                </div>
-                {include file='module:blockcypher/views/templates/hook/_partials/payment_info.tpl'}
-            {elseif $status == Configuration::get('BLOCKCYPHER_PAYMENT_RECEIVED')}
-                <div class="col-md-12 alert alert-success">
-                    <button type="button" class="close" data-dismiss="alert">×</button>
-                    Your payment has been received. Thank you for shopping with us.
-                </div>
-                {include file='module:blockcypher/views/templates/hook/_partials/payment_info.tpl'}
             {/if}
         </div>
     </div>

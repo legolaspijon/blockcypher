@@ -10,6 +10,7 @@ class blockcypherWebhookModuleFrontController extends ModuleFrontController
 
         $total_received = 0;
         $address = '';
+        $update = false;
 
         if(isset($data->address)) {
             $total_received = $data->total_sent;
@@ -25,19 +26,16 @@ class blockcypherWebhookModuleFrontController extends ModuleFrontController
         $order = BlockcypherOrders::getBlockcypherOrderByColumnName($address, 'addr');
         $order->plus($total_received);
         $order->last_update = time();
-
         if($order->received_confirmed == 0 && $order->isExpired()) {
             $order->status = Configuration::get('BLOCKCYPHER_PAYMENT_EXPIRED');
+            $update = true;
         } elseif ($order->received_confirmed >= $order->crypto_amount) {
             $order->status = Configuration::get('BLOCKCYPHER_PAYMENT_RECEIVED');
+            $update = true;
         }
 
-        $order->update();
-
-        if($order->status != Configuration::get('BLOCKCYPHER_PAYMENT_WAIT')){
-            $ps_order = new Order($order->id_order);
-            $ps_order->setCurrentState($order->status);
-        }
+        if ($update)
+            $order->update();
 
         exit();
     }
